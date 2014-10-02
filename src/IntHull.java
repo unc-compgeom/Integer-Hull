@@ -452,7 +452,7 @@ class DiskIntHull {
 				// Case C
 				if (alpha > 0) {
 					u = u.plus(v.times(alpha));
-				}
+				}/*
 				else if (alpha == 0) {
 					alpha = lastOnOrBefore(z, u, c, r);
 					if (alpha > 0) {
@@ -462,7 +462,7 @@ class DiskIntHull {
 					w = S.pop();
 					u = w.u;
 					v = w.v;	
-				}
+				}*/
 				else {
 					alpha = lastOnOrBefore(z, v, c, r);
 					if (alpha > 0) {
@@ -496,6 +496,8 @@ public class IntHull {
 	public static final Stack<Wedge> S = new Stack<Wedge>();
 	
 	private static void initializeStack() {
+//		S.push(IV);
+//		S.push(III);
 		S.push(II);
 		S.push(I);
 		S.push(IV);
@@ -524,12 +526,13 @@ public class IntHull {
 		}
 		else {
 			// Disk Input
-			Point center = new Point(0,0);
-			double radius = 4.9;
+			//Point center = new Point(0, 0);
+			Point center = new Point(Math.random()*20 - 10, Math.random()*20-10);
+			double radius = 10000000;
 			
 			DiskIntHull H2 = new DiskIntHull(center, radius);
 			H2.print();
-			System.out.println("Duration: " + H2.duration);
+			System.out.println("Center: " + center + "\nRadius: " + radius + "\nDuration: " + H2.duration/1000000000.0 + "sec");
 		}
 	}
 }
