@@ -416,7 +416,8 @@ class DiskIntHull {
 		
 		double disc = B*B - C*A;
 		if (disc < 0) return -1;
-		else return (B+Math.sqrt(disc) == 0) ? 1 : (int) Math.floor(-C/(B + Math.sqrt(disc)));
+		else if (disc == 0) return 0;
+		else return (-C==(B + Math.sqrt(disc))) ? 1 : (int) Math.floor(-C/(B + Math.sqrt(disc)));
 	}
 	private int lastOnOrOutside(Point z, Vector v, Point center, double radius) {
 		double A = v.dot(v);
@@ -425,7 +426,7 @@ class DiskIntHull {
 		
 		double disc = B*B - C*A;
 		if (disc < 0) return -1;
-		else return (int) Math.floor((-B - Math.sqrt(disc)) / A);
+		else return (int) Math.ceil((-B - Math.sqrt(disc)) / A) - 1;
 	}
 	private Polygon ProcessWedge(Stack<Wedge> S, Point z, Disk D) {
 		Polygon convexHull = new Polygon();
@@ -441,17 +442,24 @@ class DiskIntHull {
 			
 			Point z1 = z.plus(u).plus(v);
 			int alpha = lastOnOrBefore(z1, u, c, r);
+//			System.out.println("alpha=" + alpha);
 			
 			// Case D
 			if (alpha >= 0) {
+//				System.out.println("case D");
 				S.push(new Wedge(u, v));
 				v = v.plus(u.times(alpha+1));
+//				System.out.println("v="+v);
+				
 			}
 			else {
 				alpha = lastOnOrOutside(z.plus(u), v, c, r);
+//				System.out.println("alpha=" + alpha);
 				// Case C
 				if (alpha > 0) {
+//					System.out.println("case C");
 					u = u.plus(v.times(alpha));
+//					System.out.println("u=" + u);
 				}/*
 				else if (alpha == 0) {
 					alpha = lastOnOrBefore(z, u, c, r);
@@ -465,13 +473,16 @@ class DiskIntHull {
 				}*/
 				else {
 					alpha = lastOnOrBefore(z, v, c, r);
+//					System.out.println("alpha=" + alpha);
 					if (alpha > 0) {
 						z = z.plus(v.times(alpha));
+//						System.out.println("added "+z);
 						convexHull.add(z);
 					}
 					w = S.pop();
 					u = w.u;
 					v = w.v;
+//					System.out.println("u=" + u + ";v=" + v);
 				}
 			}
 		}
@@ -526,8 +537,8 @@ public class IntHull {
 		}
 		else {
 			// Disk Input
-			//Point center = new Point(0, 0);
-			Point center = new Point(Math.random()*20 - 10, Math.random()*20-10);
+			Point center = new Point(0, 0);
+			//Point center = new Point(Math.random()*20 - 10, Math.random()*20-10);
 			double radius = 10000000;
 			
 			DiskIntHull H2 = new DiskIntHull(center, radius);
