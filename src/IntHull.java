@@ -1,13 +1,13 @@
 import java.util.Stack;
 
 class Point {
-	public double x,y;
+	public int x,y;
 	
 	public Point() {
 		this.x = 0;
 		this.y = 0;
 	}
-	public Point(double x, double y) {
+	public Point(int x, int y) {
 		this.x = x;
 		this.y = y;
 	}
@@ -15,13 +15,13 @@ class Point {
 		this.x = p.x;
 		this.y = p.y;
 	}	
-	public Point plus(double x, double y) {
+	public Point plus(int x, int y) {
 		return new Point(this.x + x, this.y + y);
 	}
 	public Point plus(Vector v) {
 		return plus(v.x, v.y);
 	}
-	public Point minus(double x, double y) {
+	public Point minus(int x, int y) {
 		return new Point(this.x - x, this.y - y);
 	}
 	public Point minus(Vector v) {
@@ -44,14 +44,34 @@ class Point {
 	}
 }
 
+class Center extends Point {
+	public float x,y;
+	
+	public Center() {
+		this.x = 0;
+		this.y = 0;
+	}
+	public Center(float x, float y) {
+		this.x = x;
+		this.y = y;
+	}
+	public Center(Center p) {
+		this.x = p.x;
+		this.y = p.y;
+	}	
+	public String toString() {
+		return "(" + x + ", " + y + ")";
+	}
+}
+
 class Vector {
-	public double x,y;
+	public int x,y;
 	
 	public Vector() {
 		this.x = 0;
 		this.y = 0;
 	}
-	public Vector(double x, double y) {
+	public Vector(int x, int y) {
 		this.x = x;
 		this.y = y;
 	}
@@ -62,7 +82,7 @@ class Vector {
 	public double getLength() {
 		return Math.sqrt(x*x + y*y);
 	}
-	public Vector plus(double x, double y) {
+	public Vector plus(int x, int y) {
 		return new Vector(this.x + x, this.y + y);
 	}
 	public Vector plus(Vector v) {
@@ -71,7 +91,7 @@ class Vector {
 	public static Vector plus(Vector v1, Vector v2) {
 		return v1.plus(v2);
 	}
-	public Vector minus(double x, double y) {
+	public Vector minus(int x, int y) {
 		return new Vector(this.x - x, this.y - y);
 	}
 	public Vector minus(Vector v) {
@@ -80,28 +100,28 @@ class Vector {
 	public static Vector minus(Vector v1, Vector v2) {
 		return v1.minus(v2);
 	}
-	public Vector times(double s) {
+	public Vector times(int s) {
 		return new Vector(x*s, y*s);
 	}	
 	public double dot(Vector v) {
-		return x*v.x + y*v.y;
+		return (double) (x*v.x + y*v.y);
 	}
 	public static double dot(Vector v1, Vector v2) {
 		return v1.dot(v2);
 	}
 	public double cross(Vector v) {
-		return x*v.y-y*v.x;
+		return (double) (x*v.y-y*v.x);
 	}
 	public static double cross(Vector v1, Vector v2) {
 		return v1.cross(v2);
 	}
 	public Vector normalize() {
 		Vector v = new Vector();
-		double temp = x*x + y*y;
+		double temp = (int)(x*x + y*y);
 		if (temp != 0) {
 			temp = 1 / Math.sqrt(temp);
-			v.x = x * temp;
-			v.y = y * temp;
+			v.x = (int) (x * temp);
+			v.y = (int) (y * temp);
 		}
 		return v;
 	}
@@ -285,7 +305,7 @@ class Polygon {
 				temp = temp.nextVertex;
 			} while (temp != start);
 		}
-		return new Point(Math.floor(maxX), Math.floor(minY));
+		return new Point((int)Math.floor(maxX), (int)Math.floor(minY));
 	}
 	public void print() {
 		Vertex temp = start;
@@ -309,16 +329,16 @@ class Polygon {
 }
 
 class Disk {
-	public Point center;
-	public double radius;
+	public Center center;
+	public float radius;
 	public double radius2;
 	
 	public Disk() {
-		center = new Point();
+		center = new Center();
 		radius = 1;
 		radius2 = radius * radius;
 	}
-	public Disk(Point center, double radius) {
+	public Disk(Center center, float radius) {
 		this.center = center;
 		this.radius = radius;
 		radius2 = radius * radius;
@@ -326,7 +346,7 @@ class Disk {
 	public Point generateZ() {
 		double maxX = center.x + radius;
 		double minY = center.y - radius;
-		return new Point(Math.floor(maxX), Math.floor(minY));
+		return new Point((int)Math.floor(maxX), (int)Math.floor(minY));
 	}
 }
 
@@ -358,7 +378,7 @@ class ConvexPolyIntHull {
 		double temp = ccw(L.p, L.q, v);
 		if (temp == 0) a = 1;
 		else a = (int) Math.floor(-ccw(L.p, L.q, z) / temp);
-		return z.plus(v.times(a));
+		return new Point(z.x+v.x*a,z.y+v.y*a);
 	}
 	private Polygon ProcessWedge(Stack<Wedge> S, Point z, Polygon P) {
 		Polygon convexHull = new Polygon();
@@ -399,30 +419,39 @@ class ConvexPolyIntHull {
 class DiskIntHull {
 	private Polygon convexHull = new Polygon();
 	public long duration;
+	public int caseA;
+	public int caseB;
+	public int caseC;
+	public int caseD;
 	
-	public DiskIntHull(Point center, double radius) {
+	public DiskIntHull(Center center, float radius) {
 		Stack<Wedge> S = (Stack<Wedge>) IntHull.S.clone();
 		
 		Disk inputDisk = new Disk(center, radius);
 		Point z = inputDisk.generateZ();
 		duration = 0;
 		
+		caseA = 0;
+		caseB = 0;
+		caseC = 0;
+		caseD = 0;
+		
 		if (radius > 0) convexHull = ProcessWedge(S, z, inputDisk);
 	}
-	private int lastOnOrBefore(Point z, Vector v, Point center, double radius) {
-		double A = v.dot(v);
-		double B = z.minus(center).dot(v);
-		double C = z.minus(center).dot(z.minus(center)) - radius * radius;
+	private int lastOnOrBefore(Point z, Vector v, Center center, float radius) {
+		double A = (double)v.x*(double)v.x + (double)v.y*(double)v.y; // v.dot(v);
+		double B = ((double)z.x-(double)center.x)*(double)v.x + ((double)z.y-(double)center.y)*(double)v.y; // z.minus(center).dot(v);
+		double C = ((double)z.x-(double)center.x)*((double)z.x-(double)center.x) + ((double)z.y-(double)center.y)*((double)z.y-(double)center.y) - (double)radius * (double)radius;  // z.minus(center).dot(z.minus(center)) - radius * radius;
 		
 		double disc = B*B - C*A;
 		if (disc < 0) return -1;
 		else if (disc == 0) return 0;
 		else return (-C==(B + Math.sqrt(disc))) ? 1 : (int) Math.floor(-C/(B + Math.sqrt(disc)));
 	}
-	private int lastOnOrOutside(Point z, Vector v, Point center, double radius) {
-		double A = v.dot(v);
-		double B = z.minus(center).dot(v);
-		double C = z.minus(center).dot(z.minus(center)) - radius * radius;
+	private int lastOnOrOutside(Point z, Vector v, Center center, float radius) {
+		double A = (double)v.x*(double)v.x + (double)v.y*(double)v.y; // v.dot(v);
+		double B = ((double)z.x-(double)center.x)*(double)v.x + ((double)z.y-(double)center.y)*(double)v.y; // z.minus(center).dot(v);
+		double C = ((double)z.x-(double)center.x)*((double)z.x-(double)center.x) + ((double)z.y-(double)center.y)*((double)z.y-(double)center.y) - (double)radius * (double)radius;  // z.minus(center).dot(z.minus(center)) - radius * radius;
 		
 		double disc = B*B - C*A;
 		if (disc < 0) return -1;
@@ -435,10 +464,11 @@ class DiskIntHull {
 		Vector u = w.u;
 		Vector v = w.v;
 		
-		Point c = D.center;
-		double r = D.radius;
+		Center c = D.center;
+		float r = D.radius;
 		long startTime = System.nanoTime();
 		while (!S.isEmpty()) {
+//			long temptime = System.nanoTime() - startTime;
 			
 			Point z1 = z.plus(u).plus(v);
 			int alpha = lastOnOrBefore(z1, u, c, r);
@@ -446,10 +476,11 @@ class DiskIntHull {
 			
 			// Case D
 			if (alpha >= 0) {
-//				System.out.println("case D");
+//				if (temptime/1000000000.0 > 5) System.out.println("case D");
 				S.push(new Wedge(u, v));
 				v = v.plus(u.times(alpha+1));
 //				System.out.println("v="+v);
+				caseD++;
 				
 			}
 			else {
@@ -457,9 +488,10 @@ class DiskIntHull {
 //				System.out.println("alpha=" + alpha);
 				// Case C
 				if (alpha > 0) {
-//					System.out.println("case C");
+//					if (temptime/1000000000.0 > 5) System.out.println("case C");
 					u = u.plus(v.times(alpha));
 //					System.out.println("u=" + u);
+					caseC++;
 				}/*
 				else if (alpha == 0) {
 					alpha = lastOnOrBefore(z, u, c, r);
@@ -476,8 +508,13 @@ class DiskIntHull {
 //					System.out.println("alpha=" + alpha);
 					if (alpha > 0) {
 						z = z.plus(v.times(alpha));
-//						System.out.println("added "+z);
+//						if (temptime/1000000000.0 > 5) System.out.println("case B");
 						convexHull.add(z);
+						caseB++;
+					}
+					else { 
+//						if (temptime/1000000000.0 > 5) System.out.println("case A");
+						caseA++;
 					}
 					w = S.pop();
 					u = w.u;
@@ -489,6 +526,9 @@ class DiskIntHull {
 		long endTime = System.nanoTime();
 		duration = (endTime - startTime);
 		return convexHull;
+	}
+	public int getCount() {
+		return convexHull.getCount();
 	}
 	public void print() {
 		if (convexHull != null) convexHull.print();
@@ -522,30 +562,76 @@ public class IntHull {
 		
 		Boolean testDisk = true;
 		
+		int trials = 100000;
+		
+		Point[] centers = new Point[trials];
+		float[] durations = new float[trials];
+		int[] pointsOnHull = new int[trials];
+		int[] caseACount = new int[trials];
+		int[] caseBCount = new int[trials];
+		int[] caseCCount = new int[trials];
+		int[] caseDCount = new int[trials];
+		
 		if (!testDisk) {
 			// Convex Polygon Input
 			Point[] vertexList = {
-					new Point(2.3,-1.5),
-			        new Point(1.7,0.7),
-					new Point(-0.7,-0.3),
-			        new Point(-0.7,-1.5),
-			        new Point(0,-2.8)
+//					new Point(2.3,-1.5),
+//			        new Point(1.7,0.7),
+//					new Point(-0.7,-0.3),
+//			        new Point(-0.7,-1.5),
+//			        new Point(0,-2.8)
 					};
 			
 			ConvexPolyIntHull H1 = new ConvexPolyIntHull(vertexList);
 			H1.print();
 		}
 		else {
-			// Disk Input
-			Point center = new Point(0, 0);
-			//Point center = new Point(Math.random()*20 - 10, Math.random()*20-10);
-			double radius = 10000000;
+			for (int i = 0; i < trials; i++) {
+				// Disk Input
+				Center center = new Center((float)Math.random(), (float)Math.random());
+//				Center center = new Center(0,0);
+				float radius = 1000000;
 			
-			DiskIntHull H2 = new DiskIntHull(center, radius);
-			H2.print();
-			System.out.println("Center: " + center + "\nRadius: " + radius + "\nDuration: " + H2.duration/1000000000.0 + "sec");
+				DiskIntHull H2 = new DiskIntHull(center, radius);
+//				H2.print();
+				System.out.println("trial: " + i + " " + center);
+				durations[i] = (float) (H2.duration/1000000.0);
+				pointsOnHull[i] = H2.getCount();
+				caseACount[i] = H2.caseA;
+				caseBCount[i] = H2.caseB;
+				caseCCount[i] = H2.caseC;
+				caseDCount[i] = H2.caseD;
+				centers[i] = center;
+//				System.out.println("Center: " + center + "\nRadius: " + radius + "\nPoints on Hull: " + H2.getCount() + "\nDuration: " + H2.duration/1000000000.0 + "s");
+			}
+			System.out.println("\n================\nCenters\n================");
+			for (int i = 0; i < trials; i++) {
+				System.out.println(centers[i]);
+			}
+			System.out.println("\n================\nDurations (ms)\n================");
+			for (int i = 0; i < trials; i++) {
+				System.out.println(durations[i]);
+			}
+			System.out.println("\n================\nPoints On Hull\n================");
+			for (int i = 0; i < trials; i++) {
+				System.out.println(pointsOnHull[i]);
+			}
+			System.out.println("\n================\nCase A Counts\n================");
+			for (int i = 0; i < trials; i++) {
+				System.out.println(caseACount[i]);
+			}
+			System.out.println("\n================\nCase B Counts\n================");
+			for (int i = 0; i < trials; i++) {
+				System.out.println(caseBCount[i]);
+			}
+			System.out.println("\n================\nCase C Counts\n================");
+			for (int i = 0; i < trials; i++) {
+				System.out.println(caseCCount[i]);
+			}
+			System.out.println("\n================\nCase D Counts\n================");
+			for (int i = 0; i < trials; i++) {
+				System.out.println(caseDCount[i]);
+			}
 		}
 	}
 }
-
-
